@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A minimal lifting form-check app with pose detection and rep-by-rep coaching.",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
