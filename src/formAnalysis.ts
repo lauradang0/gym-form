@@ -1,4 +1,7 @@
-import * as poseDetection from "@tensorflow-models/pose-detection";
+import { load as loadMoveNet } from "@tensorflow-models/pose-detection/dist/movenet/detector";
+import { SINGLEPOSE_LIGHTNING } from "@tensorflow-models/pose-detection/dist/movenet/constants";
+import type { PoseDetector } from "@tensorflow-models/pose-detection/dist/pose_detector";
+import type { Keypoint, Pose } from "@tensorflow-models/pose-detection/dist/types";
 import "@tensorflow/tfjs-backend-webgl";
 import * as tf from "@tensorflow/tfjs-core";
 import type { AnalysisResult, FormIssue, FormIssueCode, ProgressUpdate, RepBreakdown } from "./types";
@@ -68,7 +71,7 @@ const ISSUE_COPY: Record<FormIssueCode, Omit<FormIssue, "detail">> = {
   },
 };
 
-let detectorPromise: Promise<poseDetection.PoseDetector> | undefined;
+let detectorPromise: Promise<PoseDetector> | undefined;
 
 export async function analyzeLiftingVideo(
   file: File,
@@ -114,8 +117,8 @@ async function getDetector() {
       await tf.setBackend("webgl");
       await tf.ready();
 
-      return poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
-        modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+      return loadMoveNet({
+        modelType: SINGLEPOSE_LIGHTNING,
         enableSmoothing: true,
       });
     })();
@@ -171,7 +174,7 @@ function createFrameTimes(duration: number) {
 }
 
 function poseToSample(
-  pose: poseDetection.Pose | undefined,
+  pose: Pose | undefined,
   time: number,
   videoHeight: number,
 ): FrameSample | undefined {
@@ -223,7 +226,7 @@ function poseToSample(
   };
 }
 
-function keypointsByName(keypoints: poseDetection.Keypoint[]) {
+function keypointsByName(keypoints: Keypoint[]) {
   return keypoints.reduce<Partial<Record<KeypointName, Point>>>((accumulator, keypoint) => {
     if (typeof keypoint.name === "string" && isTrackedKeypoint(keypoint.name)) {
       accumulator[keypoint.name] = {
